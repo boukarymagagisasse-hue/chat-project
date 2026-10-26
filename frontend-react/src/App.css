@@ -1,0 +1,12 @@
+.app { display: flex; height: 100vh; font-family: sans-serif; }
+.sidebar { width: 250px; background: #17212b; color: white; padding: 20px; }
+.channel { padding: 10px; cursor: pointer; border-radius: 5px; margin: 5px 0; }
+.channel.active { background: #2b5278; }
+.channel:hover { background: #202e3a; }
+.chat { flex: 1; display: flex; flex-direction: column; background: #e6ebee; }
+.header { padding: 15px; background: white; font-weight: bold; border-bottom: 1px solid #ddd; }
+.messages { flex: 1; padding: 20px; overflow-y: auto; }
+.msg { background: white; padding: 8px 12px; border-radius: 10px; margin-bottom: 8px; width: fit-content; }
+.input-area { display: flex; padding: 15px; background: white; }
+.input-area input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; }
+.input-area button { margin-left: 10px; padding: 10px 20px; background: #5288c1; color: white; border: none; border-radius: 20px; }
