@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat Project</title>
+  <style>
+    :root { color-scheme: light; --bg:#f3f5f9; --panel:#fff; --ink:#172033; --muted:#778198; --accent:#4263eb; --line:#e6e9f0; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Inter,Segoe UI,Arial,sans-serif; color:var(--ink); background:var(--bg); height:100vh; }
+    .app { display:grid; grid-template-columns:280px 1fr; max-width:1400px; height:100vh; margin:auto; background:var(--panel); box-shadow:0 10px 40px #18213b12; }
+    aside { border-right:1px solid var(--line); display:flex; flex-direction:column; min-height:0; }
+    .brand { padding:23px 20px; display:flex; align-items:center; gap:11px; border-bottom:1px solid var(--line); }
+    .logo { width:40px;height:40px;border-radius:13px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800;font-size:20px; }
+    .brand h1 { font-size:18px;margin:0; } .brand small { color:var(--muted);display:block;margin-top:3px; }
+    .section-title { padding:20px 18px 9px; color:var(--muted);font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center; }
+    button { font:inherit;cursor:pointer; }
+    .plus { border:0;background:#eef1ff;color:var(--accent);border-radius:8px;width:28px;height:28px;font-size:20px; }
+    #channels { padding:0 10px; overflow-y:auto; }
+    .channel { width:100%;border:0;background:transparent;display:flex;align-items:center;gap:11px;padding:12px 10px;border-radius:10px;text-align:left;margin:2px 0;color:var(--ink); }
+    .channel:hover { background:#f6f7fb; } .channel.active { background:#eef1ff;color:var(--accent);font-weight:700; }
+    .hash { width:35px;height:35px;border-radius:10px;display:grid;place-items:center;background:#f0f2f7;color:#69748c;font-size:20px; }
+    .active .hash { background:#dfe5ff;color:var(--accent); }
+    .channel-name { flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+    .count { font-size:11px;color:var(--muted); }
+    .profile { margin-top:auto;padding:15px 18px;border-top:1px solid var(--line);display:flex;gap:10px;align-items:center; }
+    .avatar { width:37px;height:37px;border-radius:50%;display:grid;place-items:center;background:#dce8ff;color:#2949b8;font-weight:800;flex-shrink:0; }
+    .profile input { width:100%;border:1px solid var(--line);padding:8px;border-radius:8px;min-width:0; }
+    main { display:flex;flex-direction:column;min-width:0;min-height:0; }
+    .chat-head { display:flex;align-items:center;padding:20px 25px;border-bottom:1px solid var(--line);gap:12px; }
+    .chat-head h2 { margin:0;font-size:19px; } .chat-head p { margin:5px 0 0;color:var(--muted);font-size:12px; }
+    .online { margin-left:auto;color:#16865c;font-size:12px;white-space:nowrap; }
+    #messages { flex:1;overflow-y:auto;padding:25px;display:flex;flex-direction:column;gap:18px; }
+    .empty { margin:auto;text-align:center;color:var(--muted);line-height:1.6; }
+    .message { display:flex;gap:10px;align-items:flex-start;max-width:850px; }
+    .message-body { min-width:0; }
+    .message-meta { display:flex;align-items:baseline;gap:10px;margin-bottom:5px;flex-wrap:wrap; }
+    .message-meta strong { font-size:13px; } .message-meta time { font-size:11px;color:var(--muted); }
+    .bubble { background:#f3f5f9;padding:11px 14px;border-radius:4px 14px 14px 14px;line-height:1.45;overflow-wrap:anywhere;white-space:pre-wrap; }
+    .composer { border-top:1px solid var(--line);padding:18px 24px 22px; }
+    .composer form { display:flex;gap:10px;align-items:center; }
+    #messageInput { flex:1;min-width:0;border:1px solid var(--line);border-radius:12px;padding:14px 15px;font:inherit;outline:none; }
+    #messageInput:focus { border-color:#9aabff;box-shadow:0 0 0 3px #4263eb12; }
+    .send { border:0;background:var(--accent);color:#fff;padding:13px 19px;border-radius:11px;font-weight:700; }
+    .send:disabled { opacity:.5;cursor:not-allowed; }
+    .hint { font-size:11px;color:var(--muted);margin:10px 0 0 2px; }
+    .toast { position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#172033;color:white;padding:10px 15px;border-radius:9px;font-size:13px;display:none;max-width:90vw; }
+    @media(max-width:700px) {
+      .app { grid-template-columns:95px 1fr; }
+      .brand { padding:16px 12px;justify-content:center; } .brand h1,.brand small,.section-title span:first-child,.channel-name,.count,.profile label { display:none; }
+      .section-title { justify-content:center;padding:15px 5px 8px; } .channel { justify-content:center;padding:9px 5px; } .hash { width:42px;height:42px; }
+      .profile { padding:12px 8px;flex-direction:column; } .profile input { padding:7px 4px;text-align:center;font-size:11px; }
+      .chat-head { padding:16px 13px; } #messages { padding:17px 12px; } .composer { padding:12px; } .send { padding:12px; } .online { display:none; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand"><div class="logo">C</div><div><h1>Chat Project</h1><small>Votre espace de discussion</small></div></div>
+    <div class="section-title"><span>Canaux</span><button class="plus" id="addChannel" title="Créer un canal" aria-label="Créer un canal">+</button></div>
+    <nav id="channels" aria-label="Liste des canaux"></nav>
+    <div class="profile">
+      <div class="avatar" id="avatar">I</div>
+      <div style="flex:1;min-width:0"><label for="username" style="font-size:10px;color:#778198;display:block;margin-bottom:5px">VOTRE NOM</label><input id="username" maxlength="24" value="Invité" aria-label="Votre nom"></div>
+    </div>
+  </aside>
+  <main>
+    <header class="chat-head">
+      <div class="hash" id="headHash">#</div>
+      <div><h2 id="channelTitle">Général</h2><p id="channelSub">Canal de discussion</p></div>
+      <div class="online">● Chat prêt</div>
+    </header>
+    <section id="messages" aria-live="polite"><div class="empty">Chargement des messages…</div></section>
+    <footer class="composer">
+      <form id="messageForm"><input id="messageInput" maxlength="2000" autocomplete="off" placeholder="Écrire un message…" aria-label="Message"><button class="send" id="sendButton" type="submit">Envoyer ➤</button></form>
+      <p class="hint">Entrée pour envoyer · Les messages sont enregistrés sur ce serveur.</p>
+    </footer>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  let channels = [], currentChannel = null, socket = null, seenIds = new Set();
+  const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function toast(message) { const t=$('toast'); t.textContent=message; t.style.display='block'; clearTimeout(toast.timer); toast.timer=setTimeout(()=>t.style.display='none',3200); }
+  function userName() { return $('username').value.trim().slice(0,24) || 'Invité'; }
+  $('username').addEventListener('input', () => { $('avatar').textContent = userName().slice(0,1).toUpperCase(); });
+  function renderChannels() {
+    $('channels').innerHTML = channels.map(c => `<button class="channel ${currentChannel && currentChannel.id===c.id?'active':''}" data-id="${c.id}"><span class="hash">#</span><span class="channel-name">${esc(c.name)}</span><span class="count">${c.message_count || ''}</span></button>`).join('');
+    $('channels').querySelectorAll('[data-id]').forEach(b => b.addEventListener('click', () => selectChannel(Number(b.dataset.id))));
+  }
+  function renderMessage(m) {
+    if (seenIds.has(m.id)) return;
+    seenIds.add(m.id);
+    const empty = $('messages').querySelector('.empty'); if (empty) empty.remove();
+    const article = document.createElement('article'); article.className='message'; article.dataset.id=m.id;
+    const initial = esc((m.username || '?').slice(0,1).toUpperCase());
+    const date = m.created_at ? new Date(m.created_at.replace(' ', 'T') + (m.created_at.includes('Z') ? '' : 'Z')) : new Date();
+    article.innerHTML = `<div class="avatar">${initial}</div><div class="message-body"><div class="message-meta"><strong>${esc(m.username)}</strong><time>${date.toLocaleString([], {hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'})}</time></div><div class="bubble">${esc(m.content)}</div></div>`;
+    $('messages').appendChild(article); $('messages').scrollTop=$('messages').scrollHeight;
+  }
+  function connectSocket(channelId) {
+    if (socket) { socket.onclose=null; socket.close(); socket=null; }
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    socket = new WebSocket(`${protocol}//${location.host}/ws/channels/${channelId}`);
+    socket.onmessage = event => {
+      try { const data=JSON.parse(event.data); if (data.type==='message' && currentChannel && data.message.channel_id===currentChannel.id) renderMessage(data.message); }
+      catch(e) { console.error(e); }
+    };
+    socket.onopen = () => { if (socket && socket.readyState===WebSocket.OPEN) socket.send('ready'); };
+    socket.onerror = () => {};
+  }
+  async function selectChannel(id) {
+    const found=channels.find(c=>c.id===id); if (!found) return;
+    currentChannel=found; seenIds=new Set();
+    $('channelTitle').textContent=found.name; $('channelSub').textContent=`Canal · ${found.message_count || 0} message(s)`;
+    $('messages').innerHTML='<div class="empty">Chargement des messages…</div>';
+    renderChannels(); connectSocket(id);
+    try {
+      const response=await fetch(`/api/channels/${id}/messages`);
+      if (!response.ok) throw new Error('Impossible de charger les messages.');
+      const data=await response.json();
+      $('messages').innerHTML='';
+      data.forEach(renderMessage);
+      if (!data.length) $('messages').innerHTML='<div class="empty">Aucun message pour le moment.<br>Écrivez le premier message !</div>';
+    } catch(e) { toast(e.message); }
+  }
+  async function refreshChannels() {
+    const response=await fetch('/api/channels');
+    if (!response.ok) throw new Error('Impossible de charger les canaux.');
+    channels=await response.json(); renderChannels();
+    if (!currentChannel && channels.length) await selectChannel(channels[0].id);
+    else if (currentChannel) {
+      const exists=channels.find(c=>c.id===currentChannel.id);
+      if (exists) { currentChannel=exists; renderChannels(); }
+    }
+  }
+  $('messageForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const input=$('messageInput'), content=input.value.trim();
+    if (!content || !currentChannel) return;
+    $('sendButton').disabled=true;
+    try {
+      const response=await fetch(`/api/channels/${currentChannel.id}/messages`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({username:userName(),content})
+      });
+      const data=await response.json();
+      if (!response.ok) throw new Error(data.detail || 'Envoi impossible.');
+      renderMessage(data); input.value=''; input.focus();
+      const c=channels.find(x=>x.id===currentChannel.id); if(c) c.message_count=(c.message_count||0)+1;
+      renderChannels(); $('channelSub').textContent=`Canal · ${c ? c.message_count : 0} message(s)`;
+    } catch(e) { toast(e.message); }
+    finally { $('sendButton').disabled=false; }
+  });
+  $('addChannel').addEventListener('click', async () => {
+    const name=prompt('Nom du nouveau canal :');
+    if (!name || !name.trim()) return;
+    try {
+      const response=await fetch('/api/channels',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name.trim()})});
+      const data=await response.json();
+      if (!response.ok) throw new Error(data.detail || 'Création impossible.');
+      await refreshChannels(); await selectChannel(data.id); toast('Canal créé.');
+    } catch(e) { toast(e.message); }
+  });
+  refreshChannels().catch(e=>toast(e.message));
+})();
+</script>
+</body>
+</html>
